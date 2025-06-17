@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.hunterkiller.survey"
     },
     "web": {
       "bundler": "metro",
@@ -29,6 +30,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6a3fc5c7-e3be-49e9-be82-71d703ba1c2f"
+      }
     }
   }
 }

@@ -31,23 +31,22 @@ const radioOptions: RadioOption[] = [
     value: "excellent",
     label: "Excellent Service",
     labelHindi: "उत्कृष्ट सेवा",
-    color: "#FF4444",
-    description:
-      "Outstanding experience that exceeded your expectations in every way",
+    color: "#00CC66",
+    description: "",
+  },
+  {
+    value: "satisfactory",
+    label: "Satisfactory Service",
+    labelHindi: "सन्तोषजनक सेवा",
+    color: "#FFD700",
+    description: "",
   },
   {
     value: "average",
     label: "Average Service",
-    labelHindi: "राम्रो सेवा",
-    color: "#00CC88",
-    description: "Good service that met your basic needs and requirements",
-  },
-  {
-    value: "satisfactory",
-    label: "Satisfactory",
     labelHindi: "औसत सेवा",
-    color: "#FFCC00",
-    description: "Service was acceptable but has room for improvement",
+    color: "#FF4444",
+    description: "",
   },
 ];
 
@@ -68,25 +67,54 @@ const SurveyForm: React.FC<{
     <View style={styles.container}>
       {/* Background Graphics */}
       <Image
-        source={require("@/assets/images/bg-graphics.svg")}
+        source={require("@/assets/images/Background.svg")}
         style={styles.backgroundImage}
         contentFit="cover"
       />
 
       <View style={styles.content}>
-        {/* Form Label */}
-        <View style={styles.formLabelContainer}>
-          <Text style={styles.formLabel}>FORM</Text>
+        {/* Logos positioned outside card */}
+        <Image
+          source={require("@/assets/images/Emblem_of_Nepal.svg")}
+          style={styles.logoTopLeft}
+          contentFit="contain"
+        />
+        <Image
+          source={require("@/assets/images/Civil_Aviation_Authority_of_Nepal.png")}
+          style={styles.logoTopRight}
+          contentFit="contain"
+        />
+
+        {/* Government Department Information */}
+        <View style={styles.governmentInfoContainer}>
+          <Text style={styles.governmentMainText}>Government of Nepal</Text>
+          <Text style={styles.governmentDeptText}>
+            Ministry of Culture, Tourism, and Civil Aviation
+          </Text>
+          <Text style={styles.governmentCellText}>
+            Aerodrome Safety and Standard Department
+          </Text>
+          <Text style={styles.governmentLocationText}>
+            Babar Mahal, Kathmandu
+          </Text>
         </View>
 
         {/* Main Card */}
         <View style={styles.card}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Satisfaction Form</Text>
+            <Text style={styles.title}>
+              <Text style={styles.customBold}>Survey Form</Text>
+            </Text>
+            <Text style={styles.titleNepali}>सर्वेक्षण फारम</Text>
             <Text style={styles.subtitle}>
               We value your feedback – help us improve!
             </Text>
+            <TouchableOpacity style={styles.nepaliSubtitleButton}>
+              <Text style={styles.nepaliSubtitleText}>
+                हामी तपाईंको प्रतिक्रियाको कदर गर्छौं —हामीलाई सहयोग गर्नुहोस्!
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* Options */}
@@ -106,7 +134,11 @@ const SurveyForm: React.FC<{
                       <View
                         style={[
                           styles.radioInner,
-                          { backgroundColor: option.color },
+                          {
+                            backgroundColor: "transparent",
+                            borderColor: option.color,
+                            borderWidth: 4,
+                          },
                         ]}
                       />
                     )}
@@ -117,21 +149,9 @@ const SurveyForm: React.FC<{
                     {option.label}/{" "}
                     <Text style={styles.hindiText}>{option.labelHindi}</Text>
                   </Text>
-                  <Text style={styles.optionDescription}>
-                    {option.description}
-                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
-          </View>
-
-          {/* Note */}
-          <View style={styles.noteContainer}>
-            <Text style={styles.noteText}>
-              <Text style={styles.noteBold}>Note :</Text> Please choose one of
-              the three options: Excellent, Good, or Average. Your response
-              helps us analyze and improve the quality of service.
-            </Text>
           </View>
         </View>
       </View>
@@ -144,11 +164,9 @@ const ThankYouScreen: React.FC<{
 }> = ({ onReset }) => {
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.8);
-  const smileyRotateAnim = new Animated.Value(0);
-  const smileyScaleAnim = new Animated.Value(0.5);
 
   useEffect(() => {
-    // Start animations
+    // Card fade/scale animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -163,38 +181,6 @@ const ThankYouScreen: React.FC<{
       }),
     ]).start();
 
-    // Smiley animation sequence
-    Animated.sequence([
-      Animated.delay(200),
-      Animated.parallel([
-        Animated.spring(smileyScaleAnim, {
-          toValue: 1,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(smileyRotateAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(smileyScaleAnim, {
-            toValue: 1.1,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(smileyScaleAnim, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-        ])
-      ),
-    ]).start();
-
     // Auto reset after 3 seconds
     const timer = setTimeout(() => {
       onReset();
@@ -203,63 +189,73 @@ const ThankYouScreen: React.FC<{
     return () => clearTimeout(timer);
   }, []);
 
-  const smileyRotate = smileyRotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
-
   return (
     <View style={styles.container}>
       {/* Background Graphics */}
       <Image
-        source={require("@/assets/images/bg-graphics.svg")}
+        source={require("@/assets/images/Background.svg")}
         style={styles.backgroundImage}
         contentFit="cover"
       />
 
-      <Animated.View
-        style={[
-          styles.thankYouContent,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          },
-        ]}
-      >
-        <View style={styles.formLabelContainer}>
-          <Text style={styles.formLabel}>FORM</Text>
+      <View style={styles.content}>
+        {/* Logos positioned outside card */}
+        <Image
+          source={require("@/assets/images/Emblem_of_Nepal.svg")}
+          style={styles.logoTopLeft}
+          contentFit="contain"
+        />
+        <Image
+          source={require("@/assets/images/Civil_Aviation_Authority_of_Nepal.png")}
+          style={styles.logoTopRight}
+          contentFit="contain"
+        />
+
+        {/* Government Department Information */}
+        <View style={styles.governmentInfoContainer}>
+          <Text style={styles.governmentMainText}>Government of Nepal</Text>
+          <Text style={styles.governmentDeptText}>
+            Ministry of Culture, Tourism, and Civil Aviation
+          </Text>
+          <Text style={styles.governmentCellText}>
+            Aerodrome Safety and Standard Department
+          </Text>
+          <Text style={styles.governmentLocationText}>
+            Babar Mahal, Kathmandu
+          </Text>
         </View>
 
-        <View style={styles.card}>
-          <View style={styles.thankYouInner}>
-            <Animated.View
-              style={[
-                styles.smileyContainer,
-                {
-                  transform: [
-                    { scale: smileyScaleAnim },
-                    { rotate: smileyRotate },
-                  ],
-                },
-              ]}
-            >
-              <Image
-                source={require("@/assets/images/Smily-graphics.svg")}
-                style={styles.smileyImage}
-                contentFit="contain"
-              />
-            </Animated.View>
-            <Text style={styles.thankYouTitle}>Thank You!</Text>
-            <Text style={styles.thankYouSubtitle}>
-              Your feedback has been submitted successfully.
-            </Text>
-            <Text style={styles.thankYouDescription}>
-              We appreciate your time and valuable input to help us improve our
-              services.
-            </Text>
-          </View>
+        {/* Centered Thank You Card Container */}
+        <View style={styles.thankYouCardContainer}>
+          <Animated.View
+            style={[
+              styles.card,
+              {
+                opacity: fadeAnim,
+                transform: [{ scale: scaleAnim }],
+              },
+            ]}
+          >
+            <View style={styles.thankYouInner}>
+              <View style={styles.smileyTextRow}>
+                <Image
+                  source={require("@/assets/images/Smily-graphics.svg")}
+                  style={styles.smileyImage}
+                  contentFit="contain"
+                />
+                <Text style={styles.thankYouTitle}>Thank You!</Text>
+              </View>
+              <Text style={styles.thankYouSubtitle}>
+                Your feedback has been submitted successfully.
+              </Text>
+              <Text style={styles.thankYouDescription}>
+                We appreciate your time and valuable input to help us improve
+                our services.
+              </Text>
+            </View>
+          </Animated.View>
         </View>
-      </Animated.View>
+      </View>
     </View>
   );
 };
@@ -301,141 +297,135 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: -300,
     width: width,
     height: height,
     resizeMode: "cover",
   },
   content: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
     paddingHorizontal: 20,
-  },
-  formLabelContainer: {
-    backgroundColor: "#4A90E2",
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 30,
-  },
-  formLabel: {
-    color: "white",
-    fontSize: 12,
-    fontFamily: "Outfit_600SemiBold",
-    letterSpacing: 1,
+    paddingVertical: 15,
   },
   card: {
     backgroundColor: "white",
-    borderRadius: 20,
-    padding: 40,
-    width: "90%",
-    maxWidth: 480,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
+    borderRadius: 28,
+    paddingTop: 30,
+    paddingBottom: 30,
+    paddingLeft: 50,
+    paddingRight: 50,
+    width: "98%",
+    maxWidth: 700,
+    borderWidth: 1,
+    borderColor: "#efefef",
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 28,
-    fontFamily: "Outfit_700Bold",
+    fontSize: 38,
     color: "#1A1A1A",
-    marginBottom: 12,
+    marginBottom: 2,
+    textAlign: "center",
+  },
+  customBold: {
+    fontWeight: "500", // You can adjust this value for custom boldness
+    letterSpacing: 0.2,
+  },
+  titleNepali: {
+    fontSize: 24,
+    color: "#1A1A1A",
+    marginBottom: 6,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
-    fontFamily: "Outfit_400Regular",
-    color: "#666666",
+    fontSize: 15,
+    color: "#888",
+    marginBottom: 2,
     textAlign: "center",
-    lineHeight: 22,
   },
   optionsContainer: {
     marginBottom: 30,
   },
   optionRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 24,
-    paddingVertical: 8,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    backgroundColor: "transparent",
+    borderRadius: 18,
+    borderWidth: 4,
+    borderColor: "#efefef",
   },
   radioContainer: {
-    marginRight: 16,
-    marginTop: 2,
+    marginRight: 14,
+    marginTop: 0,
+    justifyContent: "center",
+    alignItems: "center",
   },
   radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 3,
     justifyContent: "center",
     alignItems: "center",
   },
   radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   optionContent: {
     flex: 1,
   },
   optionLabel: {
-    fontSize: 16,
-    fontFamily: "Outfit_600SemiBold",
+    fontSize: 22,
+    fontFamily: "Outfit_400Regular",
     color: "#1A1A1A",
     marginBottom: 4,
   },
   hindiText: {
     fontFamily: "Outfit_400Regular",
   },
-  optionDescription: {
-    fontSize: 14,
-    fontFamily: "Outfit_400Regular",
-    color: "#666666",
-    lineHeight: 20,
-  },
-  noteContainer: {
-    backgroundColor: "#E8F4FD",
-    padding: 20,
-    borderRadius: 12,
-  },
-  noteText: {
-    fontSize: 14,
-    fontFamily: "Outfit_400Regular",
-    color: "#4A4A4A",
-    lineHeight: 20,
-  },
-  noteBold: {
-    fontFamily: "Outfit_600SemiBold",
-  },
   thankYouContent: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  thankYouCardContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
   },
   thankYouInner: {
     alignItems: "center",
     paddingVertical: 20,
   },
-  smileyContainer: {
+  smileyTextRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 30,
   },
   smileyImage: {
-    width: 80,
-    height: 80,
+    width: 48,
+    height: 48,
+    marginRight: 12,
   },
   thankYouTitle: {
     fontSize: 32,
     fontFamily: "Outfit_700Bold",
     color: "#1A1A1A",
-    marginBottom: 16,
     textAlign: "center",
   },
   thankYouSubtitle: {
@@ -452,5 +442,62 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
     paddingHorizontal: 20,
+  },
+  governmentInfoContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+    marginTop: 10,
+    paddingHorizontal: 30,
+    width: "100%",
+  },
+  governmentMainText: {
+    fontSize: 15,
+    fontFamily: "Outfit_700Bold",
+    color: "#C00",
+    marginBottom: 2,
+  },
+  governmentDeptText: {
+    fontSize: 13,
+    fontFamily: "Outfit_600SemiBold",
+    color: "#C00",
+    marginBottom: 1,
+    textAlign: "center",
+  },
+  governmentCellText: {
+    fontSize: 13,
+    fontFamily: "Outfit_400Regular",
+    color: "#C00",
+    marginBottom: 1,
+    textAlign: "center",
+  },
+  governmentLocationText: {
+    fontSize: 12,
+    fontFamily: "Outfit_400Regular",
+    color: "#C00",
+    textAlign: "center",
+  },
+  logoTopLeft: {
+    position: "absolute",
+    top: 14,
+    left: 36,
+    width: 80,
+    height: 80,
+  },
+  logoTopRight: {
+    position: "absolute",
+    top: 14,
+    right: 36,
+    width: 80,
+    height: 80,
+  },
+  nepaliSubtitleButton: {
+    padding: 10,
+    borderRadius: 5,
+  },
+  nepaliSubtitleText: {
+    fontSize: 14,
+    color: "#888",
+    marginBottom: 10,
+    textAlign: "center",
   },
 });
