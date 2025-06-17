@@ -17,24 +17,21 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.hunterkiller.survey"
+      "package": "com.meroseo.survey"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font"
-    ],
+    "plugins": ["expo-router", "expo-font"],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "6a3fc5c7-e3be-49e9-be82-71d703ba1c2f"
+        "projectId": "2414d861-7374-4082-ad00-a044ac74453f"
       }
     }
   }
