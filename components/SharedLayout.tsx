@@ -9,7 +9,7 @@ export const SharedLayout: React.FC<SharedLayoutProps> = ({ children }) => {
     <View style={surveyStyles.container}>
       {/* Background Graphics */}
       <Image
-        source={require("@/assets/images/Background.svg")}
+        source={require("../assets/images/Background.svg")}
         style={surveyStyles.backgroundImage}
         contentFit="cover"
       />
@@ -17,12 +17,12 @@ export const SharedLayout: React.FC<SharedLayoutProps> = ({ children }) => {
       <View style={surveyStyles.content}>
         {/* Logos positioned outside card */}
         <Image
-          source={require("@/assets/images/Emblem_of_Nepal.png")}
+          source={require("../assets/images/Emblem_of_Nepal.png")}
           style={surveyStyles.logoTopLeft}
           contentFit="contain"
         />
         <Image
-          source={require("@/assets/images/Flag_of_Nepal.svg")}
+          source={require("../assets/images/Flag_of_Nepal.svg")}
           style={surveyStyles.logoTopRight}
           contentFit="contain"
         />

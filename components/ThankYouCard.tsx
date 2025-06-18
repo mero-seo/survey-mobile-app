@@ -21,7 +21,7 @@ export const ThankYouCard: React.FC<ThankYouCardProps> = ({ onReset }) => {
         <View style={surveyStyles.thankYouInner}>
           <View style={surveyStyles.smileyTextRow}>
             <Image
-              source={require("@/assets/images/Smily-graphics.svg")}
+              source={require("../assets/images/Smily-graphics.svg")}
               style={surveyStyles.smileyImage}
               contentFit="contain"
             />
