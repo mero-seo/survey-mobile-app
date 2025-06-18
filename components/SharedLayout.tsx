@@ -22,7 +22,7 @@ export const SharedLayout: React.FC<SharedLayoutProps> = ({ children }) => {
           contentFit="contain"
         />
         <Image
-          source={require("@/assets/images/Civil_Aviation_Authority_of_Nepal.png")}
+          source={require("@/assets/images/Flag_of_Nepal.svg")}
           style={surveyStyles.logoTopRight}
           contentFit="contain"
         />
