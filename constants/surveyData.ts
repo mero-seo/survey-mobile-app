@@ -26,5 +26,5 @@ export const radioOptions: RadioOption[] = [
 
 export const SURVEY_CONFIG = {
   AUTO_RESET_DELAY: 3000,
-  OPTION_SELECT_DELAY: 300,
+  OPTION_SELECT_DELAY: 0,
 } as const;

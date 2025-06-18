@@ -14,7 +14,8 @@
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease",
         "env": {
-          "EXPO_USE_DEV_SERVER": "false"
+          "EXPO_USE_DEV_SERVER": "false",
+          "NODE_ENV": "production"
         }
       }
     },

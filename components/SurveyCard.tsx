@@ -9,20 +9,25 @@ export const SurveyCard: React.FC<SurveyCardProps> = ({ onSubmit }) => {
 
   const handleOptionSelect = (value: string) => {
     setSelectedAnswer(value);
-    // Navigate immediately when option is selected
-    setTimeout(() => {
+    // Navigate immediately - no delay for fast response
+    if (SURVEY_CONFIG.OPTION_SELECT_DELAY === 0) {
       onSubmit(value);
-    }, SURVEY_CONFIG.OPTION_SELECT_DELAY);
+    } else {
+      setTimeout(() => {
+        onSubmit(value);
+      }, SURVEY_CONFIG.OPTION_SELECT_DELAY);
+    }
   };
 
   return (
     <View style={surveyStyles.card}>
       {/* Header */}
       <View style={surveyStyles.header}>
-        <Text style={surveyStyles.title}>
-          <Text style={surveyStyles.customBold}>Survey Form</Text>
-        </Text>
-        <Text style={surveyStyles.titleNepali}>सर्वेक्षण फारम</Text>
+        <View style={surveyStyles.titleRow}>
+          <Text style={surveyStyles.title}>Survey Form</Text>
+          <Text style={surveyStyles.title}>/</Text>
+          <Text style={surveyStyles.titleNepali}>सर्वेक्षण फारम</Text>
+        </View>
         <Text style={surveyStyles.subtitle}>
           We value your feedback – help us improve!
         </Text>
@@ -38,31 +43,28 @@ export const SurveyCard: React.FC<SurveyCardProps> = ({ onSubmit }) => {
         {radioOptions.map((option) => (
           <TouchableOpacity
             key={option.value}
-            style={surveyStyles.optionRow}
+            style={[
+              surveyStyles.optionRow,
+              selectedAnswer === option.value && {
+                borderColor: option.color,
+                borderWidth: 4,
+                backgroundColor: `${option.color}08`,
+              },
+            ]}
             onPress={() => handleOptionSelect(option.value)}
-            activeOpacity={0.8}
+            activeOpacity={1} // No opacity animation for instant feel
           >
-            <View style={surveyStyles.radioContainer}>
+            <View style={surveyStyles.circleContainer}>
               <View
-                style={[surveyStyles.radioOuter, { borderColor: option.color }]}
-              >
-                {selectedAnswer === option.value && (
-                  <View
-                    style={[
-                      surveyStyles.radioInner,
-                      {
-                        backgroundColor: "transparent",
-                        borderColor: option.color,
-                        borderWidth: 4,
-                      },
-                    ]}
-                  />
-                )}
-              </View>
+                style={[
+                  surveyStyles.coloredCircle,
+                  { backgroundColor: option.color },
+                ]}
+              />
             </View>
             <View style={surveyStyles.optionContent}>
               <Text style={surveyStyles.optionLabel}>
-                {option.label}/{" "}
+                {option.label} /{" "}
                 <Text style={surveyStyles.hindiText}>{option.labelHindi}</Text>
               </Text>
             </View>

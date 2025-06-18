@@ -25,14 +25,24 @@ export const ThankYouCard: React.FC<ThankYouCardProps> = ({ onReset }) => {
               style={surveyStyles.smileyImage}
               contentFit="contain"
             />
-            <Text style={surveyStyles.thankYouTitle}>Thank You!</Text>
+            <View style={surveyStyles.thankYouTitleContainer}>
+              <Text style={surveyStyles.thankYouTitle}>Thank You!</Text>
+              <Text style={surveyStyles.thankYouTitleNepali}>धन्यवाद!</Text>
+            </View>
           </View>
           <Text style={surveyStyles.thankYouSubtitle}>
             Your feedback has been submitted successfully.
           </Text>
+          <Text style={surveyStyles.thankYouSubtitleNepali}>
+            तपाईंको प्रतिक्रिया सफलतापूर्वक पेश गरिएको छ।
+          </Text>
           <Text style={surveyStyles.thankYouDescription}>
             We appreciate your time and valuable input to help us improve our
             services.
+          </Text>
+          <Text style={surveyStyles.thankYouDescriptionNepali}>
+            हामी तपाईंको समय र मूल्यवान सुझावको कदर गर्छौं जसले हाम्रो सेवा
+            सुधार गर्न मद्दत गर्छ।
           </Text>
         </View>
       </View>
