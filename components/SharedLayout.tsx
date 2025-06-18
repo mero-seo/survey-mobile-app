@@ -17,7 +17,7 @@ export const SharedLayout: React.FC<SharedLayoutProps> = ({ children }) => {
       <View style={surveyStyles.content}>
         {/* Logos positioned outside card */}
         <Image
-          source={require("@/assets/images/Emblem_of_Nepal.svg")}
+          source={require("@/assets/images/Emblem_of_Nepal.png")}
           style={surveyStyles.logoTopLeft}
           contentFit="contain"
         />
