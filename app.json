@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "survey",
+    "name": "सर्वेक्षण फारम",
     "slug": "survey",
     "version": "1.0.0",
     "orientation": "landscape",
@@ -31,8 +31,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "2414d861-7374-4082-ad00-a044ac74453f"
+        "projectId": "b652581d-6fd9-4657-bb7f-fd38c7d05516"
       }
-    }
+    },
+    "owner": "aditya3062"
   }
 }
