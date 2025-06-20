@@ -264,4 +264,15 @@ export const surveyStyles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
   },
+  loadingContainer: {
+    alignItems: "center",
+    marginTop: 15,
+    paddingVertical: 10,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontFamily: "Outfit_500Medium",
+    color: "#666",
+    textAlign: "center",
+  },
 });

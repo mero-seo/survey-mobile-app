@@ -4,17 +4,23 @@ import { radioOptions, SURVEY_CONFIG } from "../constants/surveyData";
 import { surveyStyles } from "../styles/surveyStyles";
 import { SurveyCardProps } from "../types/survey";
 
-export const SurveyCard: React.FC<SurveyCardProps> = ({ onSubmit }) => {
+export const SurveyCard: React.FC<SurveyCardProps> = ({
+  onSubmit,
+  isLoading = false,
+}) => {
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
 
-  const handleOptionSelect = (value: string) => {
+  const handleOptionSelect = async (value: string) => {
+    if (isLoading) return; // Prevent multiple submissions
+
     setSelectedAnswer(value);
+
     // Navigate immediately - no delay for fast response
     if (SURVEY_CONFIG.OPTION_SELECT_DELAY === 0) {
-      onSubmit(value);
+      await onSubmit(value);
     } else {
-      setTimeout(() => {
-        onSubmit(value);
+      setTimeout(async () => {
+        await onSubmit(value);
       }, SURVEY_CONFIG.OPTION_SELECT_DELAY);
     }
   };
@@ -50,9 +56,11 @@ export const SurveyCard: React.FC<SurveyCardProps> = ({ onSubmit }) => {
                 borderWidth: 4,
                 backgroundColor: `${option.color}08`,
               },
+              isLoading && { opacity: 0.6 }, // Dim when loading
             ]}
             onPress={() => handleOptionSelect(option.value)}
             activeOpacity={1} // No opacity animation for instant feel
+            disabled={isLoading} // Disable when loading
           >
             <View style={surveyStyles.circleContainer}>
               <View
@@ -71,6 +79,13 @@ export const SurveyCard: React.FC<SurveyCardProps> = ({ onSubmit }) => {
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* Loading indicator */}
+      {isLoading && (
+        <View style={surveyStyles.loadingContainer}>
+          <Text style={surveyStyles.loadingText}>Saving your response...</Text>
+        </View>
+      )}
     </View>
   );
 };

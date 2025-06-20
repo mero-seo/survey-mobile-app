@@ -7,7 +7,8 @@ export interface RadioOption {
 }
 
 export interface SurveyCardProps {
-  onSubmit: (answer: string) => void;
+  onSubmit: (answer: string) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export interface ThankYouCardProps {
