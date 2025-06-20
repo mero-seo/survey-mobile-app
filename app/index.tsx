@@ -82,8 +82,8 @@ export default function SurveyApp() {
         createdAt: new Date().toISOString(),
       };
 
-      // Save to SQLite
-      insertSurvey(survey);
+      // Save to storage
+      await insertSurvey(survey);
 
       // Update context
       dispatch({ type: "ADD_SURVEY", payload: survey });

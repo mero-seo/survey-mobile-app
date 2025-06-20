@@ -97,15 +97,15 @@ class BackgroundSyncService {
       await syncPendingSurveys(
         pendingSurveys,
         // On success
-        (id: string) => {
-          updateSurveySyncStatus(id, "synced");
+        async (id: string) => {
+          await updateSurveySyncStatus(id, "synced");
           syncedCount++;
           console.log(`Survey ${id} synced successfully`);
         },
         // On error
-        (id: string, error: Error) => {
-          incrementRetryCount(id);
-          updateSurveySyncStatus(id, "failed");
+        async (id: string, error: Error) => {
+          await incrementRetryCount(id);
+          await updateSurveySyncStatus(id, "failed");
           failedCount++;
           console.error(`Failed to sync survey ${id}:`, error);
         }
