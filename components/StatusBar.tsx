@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { getBackgroundSync } from "../services/backgroundSync";
 import {
-  addNetworkListener,
-  getNetworkService,
-  NetworkStatus,
-} from "../services/networkService";
+  getBackgroundSyncStatus,
+  BackgroundSyncState,
+} from "../services/backgroundSync";
+import { getNetworkService, NetworkStatus } from "../services/networkService";
 import { getPendingSurveys } from "../services/surveyStorage";
 
 interface StatusBarProps {
@@ -23,7 +22,10 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     isWifi: false,
     isCellular: false,
   });
-  const [syncStatus, setSyncStatus] = useState<string>("idle");
+  const [syncState, setSyncState] = useState<BackgroundSyncState>({
+    status: "idle",
+    lastSync: null,
+  });
 
   useEffect(() => {
     // Load initial data
@@ -32,7 +34,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     loadSyncStatus();
 
     // Set up listeners
-    const unsubscribeNetwork = addNetworkListener((status) => {
+    const networkService = getNetworkService();
+    const unsubscribeNetwork = networkService.addListener((status) => {
       setNetworkStatus(status);
     });
 
@@ -69,11 +72,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
 
   const loadSyncStatus = () => {
     try {
-      const backgroundSync = getBackgroundSync();
-      if (backgroundSync) {
-        const status = backgroundSync.getStatus();
-        setSyncStatus(status.isActive ? "active" : "idle");
-      }
+      const status = getBackgroundSyncStatus();
+      setSyncState(status);
     } catch (error) {
       console.error("Error loading sync status:", error);
     }
@@ -87,11 +87,13 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   };
 
   const getSyncIcon = () => {
-    switch (syncStatus) {
-      case "active":
-        return "🔄";
+    switch (syncState.status) {
       case "syncing":
-        return "⏳";
+        return "🔄";
+      case "success":
+        return "✅";
+      case "error":
+        return "❌";
       default:
         return "💤";
     }
@@ -121,7 +123,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         <View style={styles.item}>
           <Text style={styles.label}>Sync:</Text>
           <Text style={styles.value}>
-            {getSyncIcon()} {syncStatus}
+            {getSyncIcon()} {syncState.status}
           </Text>
         </View>
 

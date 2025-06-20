@@ -1,8 +1,12 @@
 import axios from "axios";
 import Constants from "expo-constants";
 
+// Update this URL to match your backend server
+// For development: use your computer's IP address for mobile devices
+// For production: use your actual domain
 const API_BASE_URL =
-  Constants?.expoConfig?.extra?.API_BASE_URL || "http://localhost:3001/api/v1";
+  Constants?.expoConfig?.extra?.API_BASE_URL ||
+  "http://192.168.1.73:3001/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -35,6 +39,20 @@ export const apiGet = async (url: string, params?: any) => {
 export const apiPost = async (url: string, data?: any) => {
   try {
     const response = await api.post(url, data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Generic POST for public endpoints (no auth token)
+export const apiPostPublic = async (url: string, data?: any) => {
+  try {
+    const response = await api.post(url, data, {
+      headers: {
+        Authorization: null,
+      },
+    });
     return response.data;
   } catch (error) {
     throw error;

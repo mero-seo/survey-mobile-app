@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { radioOptions, SURVEY_CONFIG } from "../constants/surveyData";
+import { radioOptions } from "../constants/surveyData";
 import { surveyStyles } from "../styles/surveyStyles";
 import { SurveyCardProps } from "../types/survey";
 
@@ -15,14 +15,8 @@ export const SurveyCard: React.FC<SurveyCardProps> = ({
 
     setSelectedAnswer(value);
 
-    // Navigate immediately - no delay for fast response
-    if (SURVEY_CONFIG.OPTION_SELECT_DELAY === 0) {
-      await onSubmit(value);
-    } else {
-      setTimeout(async () => {
-        await onSubmit(value);
-      }, SURVEY_CONFIG.OPTION_SELECT_DELAY);
-    }
+    // Immediately submit the survey upon selection.
+    await onSubmit(value);
   };
 
   return (
@@ -59,7 +53,7 @@ export const SurveyCard: React.FC<SurveyCardProps> = ({
               isLoading && { opacity: 0.6 }, // Dim when loading
             ]}
             onPress={() => handleOptionSelect(option.value)}
-            activeOpacity={1} // No opacity animation for instant feel
+            activeOpacity={0.8}
             disabled={isLoading} // Disable when loading
           >
             <View style={surveyStyles.circleContainer}>

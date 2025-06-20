@@ -1,7 +1,13 @@
-import * as Device from "expo-device";
 import { AppState, AppStateStatus } from "react-native";
-import { getPendingSurveys } from "./surveyStorage";
-import { pingDevice, syncPendingSurveys } from "./syncService";
+import { getDeviceInfo } from "./deviceConfigService";
+import { pingDevice, registerDevice, syncPendingSurveys } from "./syncService";
+
+export type SyncStatus = "idle" | "syncing" | "success" | "error";
+
+export interface BackgroundSyncState {
+  status: SyncStatus;
+  lastSync: string | null;
+}
 
 export interface BackgroundSyncConfig {
   syncInterval: number; // in milliseconds
@@ -10,175 +16,86 @@ export interface BackgroundSyncConfig {
 }
 
 class BackgroundSyncService {
-  private syncInterval: number | null = null;
-  private isActive: boolean = false;
-  private config: BackgroundSyncConfig;
-  private appStateListener: ((nextAppState: AppStateStatus) => void) | null =
-    null;
+  private state: BackgroundSyncState = { status: "idle", lastSync: null };
+  private syncInterval: ReturnType<typeof setTimeout> | null = null;
+  private isInitialized = false;
 
-  constructor(config: BackgroundSyncConfig) {
-    this.config = config;
-    this.setupAppStateListener();
-  }
+  public initialize = (config: BackgroundSyncConfig) => {
+    if (this.isInitialized) {
+      console.log("Background sync already initialized");
+      return;
+    }
 
-  private setupAppStateListener() {
-    this.appStateListener = this.handleAppStateChange.bind(this);
-    AppState.addEventListener("change", this.appStateListener);
-  }
+    console.log("Initializing background sync with config:", config);
 
-  private handleAppStateChange = (nextAppState: AppStateStatus) => {
-    if (nextAppState === "active" && this.config.enableAutoSync) {
-      this.startSync();
-    } else if (nextAppState === "background" || nextAppState === "inactive") {
-      this.stopSync();
+    if (config.enableAutoSync) {
+      this.syncInterval = setInterval(async () => {
+        await this.performBackgroundSync();
+      }, config.syncInterval);
+
+      console.log(
+        `Background sync started with ${config.syncInterval}ms interval`
+      );
+    }
+
+    AppState.addEventListener("change", this.handleAppStateChange);
+    this.isInitialized = true;
+  };
+
+  private handleAppStateChange = async (nextAppState: AppStateStatus) => {
+    if (nextAppState === "active") {
+      console.log("App became active - performing immediate sync");
+      await this.performBackgroundSync();
     }
   };
 
-  public startSync() {
-    if (this.isActive || !this.config.enableAutoSync) {
-      return;
-    }
+  public manualSync = async () => {
+    console.log("Manual sync triggered...");
+    await this.performBackgroundSync();
+  };
 
-    this.isActive = true;
-    console.log("Starting background sync service...");
+  public getStatus = (): BackgroundSyncState => {
+    return { ...this.state };
+  };
 
-    // Initial sync
-    this.performSync();
-
-    // Set up interval for periodic sync
-    this.syncInterval = setInterval(() => {
-      this.performSync();
-    }, this.config.syncInterval);
-  }
-
-  public stopSync() {
-    if (!this.isActive) {
-      return;
-    }
-
-    this.isActive = false;
-    console.log("Stopping background sync service...");
-
+  public stop = () => {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
+      console.log("Background sync stopped");
     }
-  }
+    this.isInitialized = false;
+  };
 
-  private async performSync() {
+  private performBackgroundSync = async () => {
+    if (this.state.status === "syncing") return;
+
     try {
-      // Check if there are pending surveys
-      const pendingSurveys = await getPendingSurveys();
+      this.state.status = "syncing";
+      console.log("Performing background sync...");
 
-      if (pendingSurveys.length === 0) {
-        console.log("No pending surveys to sync");
-        return;
+      const deviceInfo = await getDeviceInfo();
+      const registered = await registerDevice(deviceInfo);
+      if (registered) {
+        console.log("Device registration successful during background sync");
       }
 
-      console.log(
-        `Background sync: Found ${pendingSurveys.length} pending surveys`
-      );
+      await syncPendingSurveys();
+      await pingDevice(deviceInfo.deviceId);
 
-      // Perform sync
-      const result = await syncPendingSurveys();
-
-      if (result.success) {
-        console.log(
-          `Background sync completed: ${result.syncedCount} synced, ${result.failedCount} failed`
-        );
-      } else {
-        console.error("Background sync failed:", result.errors);
-      }
-
-      // Ping device to update last seen
-      if (this.config.deviceId) {
-        await pingDevice(this.config.deviceId);
-      }
+      this.state.status = "success";
+      this.state.lastSync = new Date().toISOString();
+      console.log("Background sync completed successfully");
     } catch (error) {
-      console.error("Background sync error:", error);
+      this.state.status = "error";
+      console.error("Background sync failed:", error);
     }
-  }
-
-  public async manualSync(): Promise<boolean> {
-    try {
-      console.log("Manual sync triggered...");
-      const result = await syncPendingSurveys();
-      return result.success;
-    } catch (error) {
-      console.error("Manual sync failed:", error);
-      return false;
-    }
-  }
-
-  public updateConfig(newConfig: Partial<BackgroundSyncConfig>) {
-    this.config = { ...this.config, ...newConfig };
-
-    if (this.config.enableAutoSync && this.isActive) {
-      // Restart with new config
-      this.stopSync();
-      this.startSync();
-    }
-  }
-
-  public getStatus() {
-    return {
-      isActive: this.isActive,
-      config: this.config,
-    };
-  }
-
-  public cleanup() {
-    this.stopSync();
-    // Note: AppState.removeEventListener is not available in React Native
-    // The listener will be cleaned up when the app is destroyed
-  }
+  };
 }
 
-// Default configuration
-const defaultConfig: BackgroundSyncConfig = {
-  syncInterval: 5 * 60 * 1000, // 5 minutes
-  enableAutoSync: true,
-  deviceId: Device.deviceName || "unknown_device",
-};
+const backgroundSyncService = new BackgroundSyncService();
 
-// Singleton instance
-let backgroundSyncInstance: BackgroundSyncService | null = null;
-
-export const initializeBackgroundSync = (
-  config?: Partial<BackgroundSyncConfig>
-) => {
-  if (backgroundSyncInstance) {
-    backgroundSyncInstance.cleanup();
-  }
-
-  const finalConfig = { ...defaultConfig, ...config };
-  backgroundSyncInstance = new BackgroundSyncService(finalConfig);
-
-  // Start sync if app is active
-  if (AppState.currentState === "active") {
-    backgroundSyncInstance.startSync();
-  }
-
-  return backgroundSyncInstance;
-};
-
-export const getBackgroundSync = () => backgroundSyncInstance;
-
-export const startBackgroundSync = () => {
-  if (backgroundSyncInstance) {
-    backgroundSyncInstance.startSync();
-  }
-};
-
-export const stopBackgroundSync = () => {
-  if (backgroundSyncInstance) {
-    backgroundSyncInstance.stopSync();
-  }
-};
-
-export const manualSync = async (): Promise<boolean> => {
-  if (backgroundSyncInstance) {
-    return await backgroundSyncInstance.manualSync();
-  }
-  return false;
-};
+export const initializeBackgroundSync = backgroundSyncService.initialize;
+export const manualSync = backgroundSyncService.manualSync;
+export const getBackgroundSyncStatus = backgroundSyncService.getStatus;
+export const stopBackgroundSync = backgroundSyncService.stop;

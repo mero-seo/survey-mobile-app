@@ -98,6 +98,11 @@ class NetworkService {
     // Remove all listeners
     this.listeners = [];
   }
+
+  // Get current network status
+  getStatus(): NetworkStatus {
+    return this.currentStatus;
+  }
 }
 
 // Singleton instance

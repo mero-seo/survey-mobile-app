@@ -9,6 +9,10 @@ export interface Survey {
   syncStatus: "synced" | "pending" | "failed";
   retryCount: number;
   createdAt: string;
+  deviceModel?: string;
+  deviceOs?: string;
+  deviceVersion?: string;
+  appVersion?: string;
 }
 
 const db = SQLite.openDatabaseSync("survey.db");
@@ -23,14 +27,18 @@ export async function initSurveyTable() {
     timestamp TEXT NOT NULL,
     syncStatus TEXT DEFAULT 'pending',
     retryCount INTEGER DEFAULT 0,
-    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    deviceModel TEXT,
+    deviceOs TEXT,
+    deviceVersion TEXT,
+    appVersion TEXT
   );`);
 }
 
 // Add a new survey
 export async function addSurvey(survey: Survey): Promise<void> {
   const stmt = await db.prepareAsync(
-    `INSERT INTO surveys (id, deviceId, location, answer, timestamp, syncStatus, retryCount, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`
+    `INSERT INTO surveys (id, deviceId, location, answer, timestamp, syncStatus, retryCount, createdAt, deviceModel, deviceOs, deviceVersion, appVersion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
   );
   try {
     await stmt.executeAsync([
@@ -42,6 +50,10 @@ export async function addSurvey(survey: Survey): Promise<void> {
       survey.syncStatus,
       survey.retryCount,
       survey.createdAt,
+      survey.deviceModel || null,
+      survey.deviceOs || null,
+      survey.deviceVersion || null,
+      survey.appVersion || null,
     ]);
   } finally {
     await stmt.finalizeAsync();
@@ -105,4 +117,109 @@ export async function deleteSyncedSurveys(): Promise<void> {
 // Close the database (optional, not usually needed in Expo)
 export async function closeSurveyDB() {
   await db.closeAsync();
+}
+
+// Get survey statistics
+export const getSurveyStats = async () => {
+  try {
+    const pendingSurveys = await getPendingSurveys();
+    const syncedSurveys = await getSurveysByStatus("synced");
+    const failedSurveys = await getSurveysByStatus("failed");
+
+    return {
+      pendingCount: pendingSurveys.length,
+      syncedCount: syncedSurveys.length,
+      failedCount: failedSurveys.length,
+      totalCount:
+        pendingSurveys.length + syncedSurveys.length + failedSurveys.length,
+    };
+  } catch (error) {
+    console.error("Failed to get survey stats:", error);
+    return {
+      pendingCount: 0,
+      syncedCount: 0,
+      failedCount: 0,
+      totalCount: 0,
+    };
+  }
+};
+
+// Get surveys by sync status
+export const getSurveysByStatus = async (
+  status: "synced" | "pending" | "failed"
+) => {
+  try {
+    const result = await db.getAllAsync(
+      "SELECT * FROM surveys WHERE syncStatus = ? ORDER BY createdAt DESC",
+      [status]
+    );
+    return result || [];
+  } catch (error) {
+    console.error(`Failed to get surveys with status ${status}:`, error);
+    return [];
+  }
+};
+
+// Validate survey data before saving
+export function validateSurveyData(survey: Survey): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (!survey.id || survey.id.trim() === "") {
+    errors.push("Survey ID is required");
+  }
+
+  if (!survey.deviceId || survey.deviceId.trim() === "") {
+    errors.push("Device ID is required");
+  }
+
+  if (!survey.location || survey.location.trim() === "") {
+    errors.push("Location is required");
+  }
+
+  if (!survey.answer || survey.answer.trim() === "") {
+    errors.push("Answer is required");
+  }
+
+  if (!survey.timestamp || survey.timestamp.trim() === "") {
+    errors.push("Timestamp is required");
+  }
+
+  // Validate answer format
+  const validAnswers = ["EXCELLENT", "SATISFACTORY", "AVERAGE"];
+  if (!validAnswers.includes(survey.answer.toUpperCase())) {
+    errors.push("Answer must be one of: EXCELLENT, SATISFACTORY, AVERAGE");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
+// Validate device info completeness
+export function validateDeviceInfo(deviceInfo: any): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (!deviceInfo.deviceId || deviceInfo.deviceId.trim() === "") {
+    errors.push("Device ID is required");
+  }
+
+  if (!deviceInfo.location || deviceInfo.location.trim() === "") {
+    errors.push("Location is required");
+  }
+
+  if (!deviceInfo.name || deviceInfo.name.trim() === "") {
+    errors.push("Device name is required");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
 }
