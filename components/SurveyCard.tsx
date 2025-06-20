@@ -65,10 +65,8 @@ export const SurveyCard: React.FC<SurveyCardProps> = ({
               />
             </View>
             <View style={surveyStyles.optionContent}>
-              <Text style={surveyStyles.optionLabel}>
-                {option.label} /{" "}
-                <Text style={surveyStyles.hindiText}>{option.labelHindi}</Text>
-              </Text>
+              <Text style={surveyStyles.optionLabel}>{option.label}</Text>
+              <Text style={surveyStyles.hindiText}>{option.labelHindi}</Text>
             </View>
           </TouchableOpacity>
         ))}

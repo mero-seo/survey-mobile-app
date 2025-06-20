@@ -3,21 +3,21 @@ import { RadioOption } from "../types/survey";
 export const radioOptions: RadioOption[] = [
   {
     value: "excellent",
-    label: "Excellent Service",
+    label: "Excellent",
     labelHindi: "उत्कृष्ट सेवा",
     color: "#00CC66",
     description: "",
   },
   {
     value: "satisfactory",
-    label: "Satisfactory Service",
+    label: "Satisfactory",
     labelHindi: "सन्तोषजनक सेवा",
     color: "#FFD700",
     description: "",
   },
   {
     value: "average",
-    label: "Average Service",
+    label: "Average",
     labelHindi: "औसत सेवा",
     color: "#FF4444",
     description: "",

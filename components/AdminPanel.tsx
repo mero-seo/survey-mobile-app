@@ -26,7 +26,6 @@ import {
 } from "../services/deviceConfigService";
 import { getNetworkService } from "../services/networkService";
 import { getSurveyStats } from "../services/surveyStorage";
-import { registerDevice } from "../services/syncService";
 import { StatusBar } from "./StatusBar";
 
 interface AdminPanelProps {
@@ -292,6 +291,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             </View>
 
             {/* Danger Zone */}
+            {/**
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, styles.dangerTitle]}>
                 Danger Zone
@@ -315,6 +315,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 <Text style={styles.buttonText}>Reset Device Setup</Text>
               </TouchableOpacity>
             </View>
+            */}
           </>
         )}
       </ScrollView>
