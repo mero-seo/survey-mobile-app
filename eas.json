@@ -6,17 +6,21 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "API_BASE_URL": "https://your-development-backend.vercel.app/api/v1"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease",
-        "env": {
-          "EXPO_USE_DEV_SERVER": "false",
-          "NODE_ENV": "production"
-        }
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "EXPO_USE_DEV_SERVER": "false",
+        "NODE_ENV": "production",
+        "API_BASE_URL": "https://your-staging-backend.vercel.app/api/v1"
       }
     },
     "production": {
@@ -24,6 +28,19 @@
       "android": {
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease"
+      },
+      "env": {
+        "API_BASE_URL": "http://localhost:3001/api/v1"
+      }
+    },
+    "production-apk": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "API_BASE_URL": "https://your-production-backend.vercel.app/api/v1"
       }
     }
   },
