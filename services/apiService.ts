@@ -1,12 +1,6 @@
 import axios from "axios";
-import Constants from "expo-constants";
 
-// Update this URL to match your backend server
-// For development: use your computer's IP address for mobile devices
-// For production: use your actual domain
-const API_BASE_URL =
-  Constants?.expoConfig?.extra?.API_BASE_URL ||
-  "http://192.168.1.73:3001/api/v1";
+const API_BASE_URL = "https://survey-backend-api.onrender.com/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
