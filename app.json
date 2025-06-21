@@ -24,16 +24,19 @@
       "output": "static",
       "favicon": "./assets/images/Emblem_of_Nepal.png"
     },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "b652581d-6fd9-4657-bb7f-fd38c7d05516"
+        "projectId": "6f379fdb-75ad-4dd7-b498-77a7e6a0251f"
       }
     },
-    "owner": "aditya3062"
+    "owner": "vivin61360"
   }
 }

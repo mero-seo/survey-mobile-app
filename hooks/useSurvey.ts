@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { Alert } from "react-native";
 import { trackEvent } from "../services/analyticsService";
-import {
-  initializeBackgroundSync,
-  manualSync,
-} from "../services/backgroundSync";
+import { manualSync } from "../services/backgroundSync";
 import {
   getDeviceInfo,
   loadDeviceConfig,
@@ -17,7 +15,6 @@ import {
   validateSurveyData,
 } from "../services/surveyStorage";
 import { registerDevice } from "../services/syncService";
-import { Alert } from "react-native";
 
 interface UseSurveyReturn {
   isSubmitted: boolean;
@@ -141,7 +138,7 @@ export const useSurvey = (): UseSurveyReturn => {
 
       if (networkService.isOnline() && deviceConfig.autoSync) {
         console.log("Network available - triggering immediate sync");
-        await manualSync();
+        manualSync();
       }
 
       // Show success state

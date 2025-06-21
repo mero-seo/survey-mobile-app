@@ -122,7 +122,7 @@ export async function closeSurveyDB() {
 // Get survey statistics
 export const getSurveyStats = async () => {
   try {
-    const pendingSurveys = await getPendingSurveys();
+    const pendingSurveys = await getSurveysByStatus("pending");
     const syncedSurveys = await getSurveysByStatus("synced");
     const failedSurveys = await getSurveysByStatus("failed");
 

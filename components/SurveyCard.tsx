@@ -71,13 +71,6 @@ export const SurveyCard: React.FC<SurveyCardProps> = ({
           </TouchableOpacity>
         ))}
       </View>
-
-      {/* Loading indicator */}
-      {isLoading && (
-        <View style={surveyStyles.loadingContainer}>
-          <Text style={surveyStyles.loadingText}>Saving your response...</Text>
-        </View>
-      )}
     </View>
   );
 };

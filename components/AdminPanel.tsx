@@ -24,8 +24,6 @@ import {
   resetDeviceConfig,
   saveDeviceConfig,
 } from "../services/deviceConfigService";
-import { getNetworkService } from "../services/networkService";
-import { getSurveyStats } from "../services/surveyStorage";
 import { StatusBar } from "./StatusBar";
 
 interface AdminPanelProps {
@@ -35,7 +33,6 @@ interface AdminPanelProps {
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
   const [config, setConfig] = useState<DeviceConfig | null>(null);
   const [deviceInfo, setDeviceInfo] = useState<any>(null);
-  const [stats, setStats] = useState<any>(null);
   const [analytics, setAnalytics] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -56,22 +53,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
       const info = await getDeviceInfo();
       setDeviceInfo(info);
 
-      // Load survey statistics
-      const surveyStats = await getSurveyStats();
-      setStats(surveyStats);
-
       // Load analytics data
       const analyticsData = await getAnalyticsData();
       setAnalytics(analyticsData);
-
-      // Get network status
-      const networkService = getNetworkService();
-      const networkStatus = networkService.getStatus();
-
-      setStats((prev: any) => ({
-        ...prev,
-        network: networkStatus,
-      }));
     } catch (error) {
       console.error("Failed to load admin data:", error);
     } finally {
@@ -196,128 +180,94 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {isLoading ? (
-          <Text>Loading admin data...</Text>
-        ) : (
-          <>
-            {/* Device Info Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Device Information</Text>
-              <View style={styles.row}>
-                <Text style={styles.label}>Device ID</Text>
-                <Text style={styles.value} selectable>
-                  {deviceInfo?.deviceId}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Location</Text>
-                <Text style={styles.value}>{deviceInfo?.location}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Device Name</Text>
-                <Text style={styles.value}>{deviceInfo?.name}</Text>
-              </View>
-            </View>
-
-            {/* Survey Stats Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Survey Statistics</Text>
-              <View style={styles.row}>
-                <Text style={styles.label}>Pending Sync</Text>
-                <Text style={styles.value}>{stats?.pendingCount}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Synced</Text>
-                <Text style={styles.value}>{stats?.syncedCount}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Failed</Text>
-                <Text style={styles.value}>{stats?.failedCount}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Total Surveys</Text>
-                <Text style={styles.value}>{stats?.totalCount}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Network Status</Text>
-                <Text style={styles.value}>
-                  {stats?.network?.isConnected ? "Online" : "Offline"}
-                </Text>
-              </View>
-            </View>
-
-            {/* Actions Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Actions</Text>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleManualSync}
-              >
-                <Text style={styles.buttonText}>Manual Sync</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => loadAdminData()}
-              >
-                <Text style={styles.buttonText}>Refresh Data</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Configuration Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Configuration</Text>
-              {config && (
-                <>
-                  <View style={styles.row}>
-                    <Text style={styles.label}>Auto Sync</Text>
-                    <Switch
-                      value={config.autoSync}
-                      onValueChange={(v) => handleConfigChange("autoSync", v)}
-                    />
-                  </View>
-                  <View style={styles.row}>
-                    <Text style={styles.label}>Sync Interval (minutes)</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={String(config.syncInterval)}
-                      keyboardType="numeric"
-                      onChangeText={(t) =>
-                        handleConfigChange("syncInterval", Number(t) || 0)
-                      }
-                    />
-                  </View>
-                </>
-              )}
-            </View>
-
-            {/* Danger Zone */}
-            {/**
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, styles.dangerTitle]}>
-                Danger Zone
+        <>
+          {/* Device Info Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Device Information</Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Device ID</Text>
+              <Text style={styles.value} selectable>
+                {deviceInfo?.deviceId}
               </Text>
-              <TouchableOpacity
-                style={[styles.button, styles.dangerButton]}
-                onPress={handleResetConfig}
-              >
-                <Text style={styles.buttonText}>Reset Configuration</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.dangerButton]}
-                onPress={handleResetAnalytics}
-              >
-                <Text style={styles.buttonText}>Reset Analytics Data</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.dangerButton]}
-                onPress={handleResetSetup}
-              >
-                <Text style={styles.buttonText}>Reset Device Setup</Text>
-              </TouchableOpacity>
             </View>
-            */}
-          </>
-        )}
+            <View style={styles.row}>
+              <Text style={styles.label}>Location</Text>
+              <Text style={styles.value}>{deviceInfo?.location}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Device Name</Text>
+              <Text style={styles.value}>{deviceInfo?.name}</Text>
+            </View>
+          </View>
+
+          {/* Actions Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Actions</Text>
+            <TouchableOpacity style={styles.button} onPress={handleManualSync}>
+              <Text style={styles.buttonText}>Manual Sync</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => loadAdminData()}
+            >
+              <Text style={styles.buttonText}>Refresh Data</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Configuration Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Configuration</Text>
+            {config && (
+              <>
+                <View style={styles.row}>
+                  <Text style={styles.label}>Auto Sync</Text>
+                  <Switch
+                    value={config.autoSync}
+                    onValueChange={(v) => handleConfigChange("autoSync", v)}
+                  />
+                </View>
+                <View style={styles.row}>
+                  <Text style={styles.label}>Sync Interval (minutes)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={String(config.syncInterval)}
+                    keyboardType="numeric"
+                    onChangeText={(t) =>
+                      handleConfigChange("syncInterval", Number(t) || 0)
+                    }
+                  />
+                </View>
+              </>
+            )}
+          </View>
+
+          {/* Danger Zone */}
+          {/**
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, styles.dangerTitle]}>
+              Danger Zone
+            </Text>
+            <TouchableOpacity
+              style={[styles.button, styles.dangerButton]}
+              onPress={handleResetConfig}
+            >
+              <Text style={styles.buttonText}>Reset Configuration</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.dangerButton]}
+              onPress={handleResetAnalytics}
+            >
+              <Text style={styles.buttonText}>Reset Analytics Data</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.dangerButton]}
+              onPress={handleResetSetup}
+            >
+              <Text style={styles.buttonText}>Reset Device Setup</Text>
+            </TouchableOpacity>
+          </View>
+          */}
+        </>
       </ScrollView>
 
       {/* Status Bar */}
