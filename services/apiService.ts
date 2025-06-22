@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://survey-backend-api.onrender.com/api/v1";
+const API_BASE_URL = "http://192.168.1.73:3001/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -23,6 +23,21 @@ export const setAuthToken = (token: string | null) => {
 export const apiGet = async (url: string, params?: any) => {
   try {
     const response = await api.get(url, { params });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Generic GET for public endpoints (no auth token)
+export const apiGetPublic = async (url: string, params?: any) => {
+  try {
+    const response = await api.get(url, {
+      params,
+      headers: {
+        Authorization: null,
+      },
+    });
     return response.data;
   } catch (error) {
     throw error;

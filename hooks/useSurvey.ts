@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { trackEvent } from "../services/analyticsService";
 import { manualSync } from "../services/backgroundSync";
 import {
+  clearOldConfigData,
   getDeviceInfo,
   loadDeviceConfig,
   saveDeviceConfig,
@@ -28,11 +29,24 @@ export const useSurvey = (): UseSurveyReturn => {
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const networkListenerRef = useRef<(() => void) | null>(null);
+  const isInitializedRef = useRef<boolean>(false);
 
   // Initialize all services on mount
   useEffect(() => {
     const initializeServices = async () => {
+      // Prevent multiple initializations during hot reload
+      if (isInitializedRef.current) {
+        console.log("Services already initialized, skipping...");
+        return;
+      }
+
       try {
+        isInitializedRef.current = true;
+
+        // Clear old configuration data first
+        await clearOldConfigData();
+
         // Track app opened event
         await trackEvent("app_opened");
 
@@ -58,29 +72,39 @@ export const useSurvey = (): UseSurveyReturn => {
           console.log("Device registration failed (will retry later)");
         }
 
-        // Set up network monitoring
+        // Set up network monitoring (only once)
         const networkService = getNetworkService();
+
+        // Remove any existing listener
+        if (networkListenerRef.current) {
+          networkListenerRef.current();
+          networkListenerRef.current = null;
+        }
+
         const unsubscribe = networkService.addListener((status) => {
-          if (
-            status.isConnected &&
-            status.isInternetReachable &&
-            deviceConfig.autoSync
-          ) {
-            console.log("Network available - triggering sync");
-            manualSync(); // Trigger sync when network becomes available
+          if (status.isConnected && status.isInternetReachable) {
+            console.log("Network available - triggering debounced sync");
+            manualSync(); // This now uses debounced sync
           }
         });
 
-        // Cleanup function
-        return () => {
-          unsubscribe();
-        };
+        networkListenerRef.current = unsubscribe;
       } catch (error) {
         console.error("Failed to initialize services:", error);
+        isInitializedRef.current = false; // Reset on error
       }
     };
 
     initializeServices();
+
+    // Cleanup function
+    return () => {
+      if (networkListenerRef.current) {
+        networkListenerRef.current();
+        networkListenerRef.current = null;
+      }
+      isInitializedRef.current = false;
+    };
   }, []);
 
   const submitSurvey = useCallback(async (answer: string) => {
@@ -110,7 +134,7 @@ export const useSurvey = (): UseSurveyReturn => {
         deviceId: deviceInfo.deviceId,
         location: deviceInfo.location,
         answer: answer.toUpperCase(), // Ensure uppercase for backend
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString(), // Keep for local storage, but server will use its own time
         syncStatus: "pending" as const,
         retryCount: 0,
         createdAt: new Date().toISOString(),
@@ -132,13 +156,14 @@ export const useSurvey = (): UseSurveyReturn => {
       await addSurvey(survey);
       console.log("Survey saved locally:", survey);
 
-      // Trigger immediate sync if network is available and auto-sync is enabled
+      // Trigger immediate sync if network is available (force sync for new surveys)
       const networkService = getNetworkService();
-      const deviceConfig = await loadDeviceConfig();
 
-      if (networkService.isOnline() && deviceConfig.autoSync) {
-        console.log("Network available - triggering immediate sync");
-        manualSync();
+      if (networkService.isOnline()) {
+        console.log(
+          "Network available - triggering immediate sync for new survey"
+        );
+        manualSync(true); // Force sync for new surveys
       }
 
       // Show success state

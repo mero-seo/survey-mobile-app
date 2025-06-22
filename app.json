@@ -2,14 +2,15 @@
   "expo": {
     "name": "सर्वेक्षण फारम",
     "slug": "survey",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "landscape",
     "icon": "./assets/images/Emblem_of_Nepal.png",
     "scheme": "survey",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,17 +18,15 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.meroseo.survey"
+      "package": "com.meroseo.survey",
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/Emblem_of_Nepal.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font"
-    ],
+    "plugins": ["expo-router", "expo-font"],
     "experiments": {
       "typedRoutes": true
     },

@@ -1,11 +1,5 @@
-import {
-  apiPost,
-  apiPostPublic,
-  apiGet,
-  apiPut,
-  apiDelete,
-} from "./apiService";
-import { getDeviceInfo } from "./deviceConfigService";
+import { apiGetPublic, apiPost, apiPostPublic } from "./apiService";
+import { getDeviceInfo, updateLocalDeviceInfo } from "./deviceConfigService";
 import {
   deleteSyncedSurveys,
   getPendingSurveys,
@@ -21,11 +15,6 @@ export interface DeviceInfo {
   os: string;
   version: string;
   appVersion: string;
-  configuration?: {
-    surveyInterval: number;
-    theme: string;
-    language: string;
-  };
 }
 
 export interface SyncResult {
@@ -175,11 +164,6 @@ export const registerDevice = async (
       deviceId: deviceInfo.deviceId,
       location: deviceInfo.location,
       name: deviceInfo.name,
-      configuration: {
-        surveyInterval: deviceInfo.configuration?.surveyInterval || 30,
-        theme: deviceInfo.configuration?.theme || "default",
-        language: deviceInfo.configuration?.language || "en",
-      },
     });
 
     console.log("Device registered successfully with backend:", response);
@@ -217,7 +201,7 @@ export const registerDevice = async (
 export const submitSurvey = async (
   survey: Survey,
   deviceInfo: DeviceInfo
-): Promise<{ success: boolean; status?: string }> => {
+): Promise<{ success: boolean; status?: string; updatedDeviceInfo?: any }> => {
   try {
     console.log("Submitting survey to backend:", {
       clientSurveyId: survey.id,
@@ -231,7 +215,6 @@ export const submitSurvey = async (
       deviceId: deviceInfo.deviceId,
       location: deviceInfo.location,
       answer: survey.answer,
-      timestamp: survey.timestamp,
       deviceInfo: {
         model: deviceInfo.model,
         os: deviceInfo.os,
@@ -241,7 +224,19 @@ export const submitSurvey = async (
     });
 
     console.log("Survey submitted successfully to backend:", response);
-    return { success: true, status: response.status };
+
+    // Check if response contains updated device information
+    const updatedDeviceInfo =
+      response.data?.deviceInfo || response.data?.device || null;
+    if (updatedDeviceInfo) {
+      console.log("Backend returned updated device info:", updatedDeviceInfo);
+    }
+
+    return {
+      success: true,
+      status: response.status,
+      updatedDeviceInfo,
+    };
   } catch (error: any) {
     console.error("Failed to submit survey to backend:", error);
 
@@ -258,6 +253,25 @@ export const submitSurvey = async (
     }
 
     return { success: false };
+  }
+};
+
+// Get latest device information from backend
+export const getLatestDeviceInfo = async (deviceId: string): Promise<any> => {
+  try {
+    console.log("Fetching latest device info from backend for:", deviceId);
+    const response = await apiGetPublic(
+      `/devices/status-by-device-id/${deviceId}`
+    );
+
+    if (response.data) {
+      console.log("Latest device info from backend:", response.data);
+      return response.data;
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to get latest device info from backend:", error);
+    return null;
   }
 };
 
@@ -304,6 +318,27 @@ export const syncPendingSurveys = async (): Promise<SyncResult> => {
                 submissionResult.status || "OK"
               })`
             );
+
+            // Update local device information with backend data if available
+            if (submissionResult.updatedDeviceInfo) {
+              const backendDeviceInfo = submissionResult.updatedDeviceInfo;
+              await updateLocalDeviceInfo(
+                backendDeviceInfo.deviceId || deviceInfo.deviceId,
+                backendDeviceInfo.name || deviceInfo.name,
+                backendDeviceInfo.location || deviceInfo.location
+              );
+              console.log(
+                "Updated local device info with backend data:",
+                backendDeviceInfo
+              );
+            } else {
+              // Fallback to current device info if no backend update
+              await updateLocalDeviceInfo(
+                deviceInfo.deviceId,
+                deviceInfo.name,
+                deviceInfo.location
+              );
+            }
           } else {
             throw new Error("Survey submission failed");
           }
@@ -331,6 +366,25 @@ export const syncPendingSurveys = async (): Promise<SyncResult> => {
             await new Promise((resolve) => setTimeout(resolve, delay));
           }
         }
+      }
+    }
+
+    // After syncing all surveys, fetch the latest device info from backend
+    if (result.syncedCount > 0) {
+      try {
+        const latestDeviceInfo = await getLatestDeviceInfo(deviceInfo.deviceId);
+        if (latestDeviceInfo) {
+          await updateLocalDeviceInfo(
+            latestDeviceInfo.deviceId,
+            latestDeviceInfo.name,
+            latestDeviceInfo.location
+          );
+          console.log(
+            "Updated local device info with latest backend data after sync"
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch latest device info after sync:", error);
       }
     }
 
